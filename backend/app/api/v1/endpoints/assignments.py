@@ -1,8 +1,9 @@
 import uuid
 from typing import List
-from fastapi import APIRouter, Depends, HTTPException, Security, status
+from fastapi import APIRouter, Depends, HTTPException, Security, status, BackgroundTasks
 from sqlalchemy.orm import Session
 from app.core import deps
+from app.core.notification_manager import notify_course_students_background
 from app.crud import assignment as crud_assignment
 from app.crud import course as crud_course
 from app.schemas.assignment import (
@@ -67,6 +68,7 @@ def create_assignment(
     *,
     db: Session = Depends(deps.get_db),
     assignment_in: AssignmentCreate,
+    background_tasks: BackgroundTasks,
     current_user: User = Security(deps.RoleChecker([UserRole.ADMIN, UserRole.FACULTY]))
 ):
     """
@@ -78,7 +80,17 @@ def create_assignment(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Assignment course_id does not match the URL path."
         )
-    return crud_assignment.create_assignment(db, assignment_in=assignment_in)
+    db_ass = crud_assignment.create_assignment(db, assignment_in=assignment_in)
+    
+    # Broadcast notification to enrolled students
+    background_tasks.add_task(
+        notify_course_students_background,
+        course_id,
+        "New Assignment Published",
+        f"A new assignment has been posted: '{db_ass.title}'"
+    )
+    
+    return db_ass
 
 
 @router.post("/assignments/{id}/submit", response_model=SubmissionResponse, status_code=status.HTTP_201_CREATED)

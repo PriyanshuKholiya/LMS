@@ -13,6 +13,7 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 8  # 8 days
 
     DATABASE_URL: str = "postgresql://postgres:postgres@localhost:5432/lms_db"
+    OPENAI_API_KEY: str = ""
 
     # CORS configuration
     BACKEND_CORS_ORIGINS: List[str] = ["*"]

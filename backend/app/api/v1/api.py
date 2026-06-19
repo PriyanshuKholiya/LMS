@@ -6,7 +6,9 @@ from app.api.v1.endpoints import (
     assignments,
     quizzes,
     attendance,
-    ai_tutor
+    ai_tutor,
+    analytics,
+    notifications
 )
 
 api_router = APIRouter()
@@ -18,3 +20,6 @@ api_router.include_router(assignments.router, tags=["assignments"])
 api_router.include_router(quizzes.router, tags=["quizzes"])
 api_router.include_router(attendance.router, tags=["attendance"])
 api_router.include_router(ai_tutor.router, prefix="/ai-tutor", tags=["ai-tutor"])
+api_router.include_router(analytics.router, prefix="/analytics", tags=["analytics"])
+api_router.include_router(notifications.router, prefix="/notifications", tags=["notifications"])
+

@@ -40,3 +40,19 @@ class AIChatResponse(AIChatBase):
 
     class Config:
         from_attributes = True
+
+
+class AIExplainRequest(BaseModel):
+    concept_name: str
+    course_title: str
+
+
+class AIMCQRequest(BaseModel):
+    topic: str
+    num_questions: int = 3
+
+
+class AIStudyPlanRequest(BaseModel):
+    topic: str
+    duration_weeks: int = 4
+

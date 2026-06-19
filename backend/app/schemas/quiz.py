@@ -92,3 +92,13 @@ class QuizAttemptResponse(QuizAttemptBase):
 
     class Config:
         from_attributes = True
+
+
+class QuestionAnswer(BaseModel):
+    question_id: uuid.UUID
+    selected_option_id: uuid.UUID
+
+
+class QuizSubmission(BaseModel):
+    answers: List[QuestionAnswer]
+

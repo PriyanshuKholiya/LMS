@@ -1,8 +1,9 @@
 import uuid
 from typing import List, Optional
-from fastapi import APIRouter, Depends, HTTPException, Security, status
+from fastapi import APIRouter, Depends, HTTPException, Security, status, BackgroundTasks
 from sqlalchemy.orm import Session
 from app.core import deps
+from app.core.notification_manager import notify_course_students_background
 from app.crud import course as crud_course
 from app.schemas.course import (
     CourseResponse,
@@ -184,6 +185,7 @@ def create_course_module(
     *,
     db: Session = Depends(deps.get_db),
     module_in: ModuleCreate,
+    background_tasks: BackgroundTasks,
     current_user: User = Security(deps.RoleChecker([UserRole.ADMIN, UserRole.FACULTY]))
 ):
     """
@@ -195,7 +197,17 @@ def create_course_module(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Module course_id does not match the URL path."
         )
-    return crud_course.create_module(db, module_in=module_in)
+    db_module = crud_course.create_module(db, module_in=module_in)
+    
+    # Broadcast notification of syllabus update
+    background_tasks.add_task(
+        notify_course_students_background,
+        id,
+        "Course Syllabus Updated",
+        f"A new module has been added: '{db_module.title}'"
+    )
+    
+    return db_module
 
 
 @router.get("/{id}/modules", response_model=List[ModuleResponse])
@@ -265,6 +277,7 @@ def create_module_lesson(
     *,
     db: Session = Depends(deps.get_db),
     lesson_in: LessonCreate,
+    background_tasks: BackgroundTasks,
     current_user: User = Security(deps.RoleChecker([UserRole.ADMIN, UserRole.FACULTY]))
 ):
     """
@@ -282,7 +295,17 @@ def create_module_lesson(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Lesson module_id does not match the URL path."
         )
-    return crud_course.create_lesson(db, lesson_in=lesson_in)
+    db_lesson = crud_course.create_lesson(db, lesson_in=lesson_in)
+    
+    # Broadcast notification to enrolled students
+    background_tasks.add_task(
+        notify_course_students_background,
+        db_module.course_id,
+        "New Lesson Added",
+        f"A new lesson has been posted in '{db_module.title}': '{db_lesson.title}'"
+    )
+    
+    return db_lesson
 
 
 @router.put("/lessons/{lesson_id}", response_model=LessonResponse)
