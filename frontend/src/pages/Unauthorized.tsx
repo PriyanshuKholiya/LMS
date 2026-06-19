@@ -37,7 +37,7 @@ const styles: Record<string, React.CSSProperties> = {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    background: '#0b0d19',
+    background: 'var(--bg-main)',
     padding: '16px'
   },
   card: {

@@ -42,7 +42,7 @@ export const Login: React.FC = () => {
                 style={{
                   ...styles.roleCard,
                   borderColor: selectedRole === 'STUDENT' ? 'var(--primary)' : 'var(--border)',
-                  background: selectedRole === 'STUDENT' ? 'rgba(99, 102, 241, 0.08)' : 'transparent'
+                  background: selectedRole === 'STUDENT' ? 'var(--primary-light)' : 'transparent'
                 }}
                 onClick={() => selectRole('STUDENT', 'student@aegis.edu')}
                 className="transition-all"
@@ -55,7 +55,7 @@ export const Login: React.FC = () => {
                 style={{
                   ...styles.roleCard,
                   borderColor: selectedRole === 'FACULTY' ? 'var(--primary)' : 'var(--border)',
-                  background: selectedRole === 'FACULTY' ? 'rgba(99, 102, 241, 0.08)' : 'transparent'
+                  background: selectedRole === 'FACULTY' ? 'var(--primary-light)' : 'transparent'
                 }}
                 onClick={() => selectRole('FACULTY', 'faculty@aegis.edu')}
                 className="transition-all"
@@ -68,7 +68,7 @@ export const Login: React.FC = () => {
                 style={{
                   ...styles.roleCard,
                   borderColor: selectedRole === 'ADMIN' ? 'var(--primary)' : 'var(--border)',
-                  background: selectedRole === 'ADMIN' ? 'rgba(99, 102, 241, 0.08)' : 'transparent'
+                  background: selectedRole === 'ADMIN' ? 'var(--primary-light)' : 'transparent'
                 }}
                 onClick={() => selectRole('ADMIN', 'admin@aegis.edu')}
                 className="transition-all"
@@ -106,7 +106,7 @@ const styles: Record<string, React.CSSProperties> = {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    background: 'radial-gradient(circle at center, #111428 0%, #0b0d19 100%)',
+    background: 'radial-gradient(circle at center, #18181b 0%, #000000 100%)',
     padding: '16px'
   },
   card: {

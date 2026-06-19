@@ -2,6 +2,7 @@ import { courseService } from './courses';
 import { quizService } from './quizzes';
 import { assignmentService } from './assignments';
 import { attendanceService } from './attendance';
+import { userService } from './users';
 
 export interface AdminOverviewResponse {
   total_students: number;
@@ -49,14 +50,18 @@ export const analyticsService = {
   async getAdminOverview(): Promise<AdminOverviewResponse> {
     const courses = await courseService.getCourses();
     const enrolledCourses = courses.filter(c => c.enrolled);
+    const users = await userService.getUsers();
+
+    const studentCount = users.filter(u => u.role === 'STUDENT').length;
+    const facultyCount = users.filter(u => u.role === 'FACULTY').length;
     
     // Calculate average progress across enrolled courses
     const progressSum = enrolledCourses.reduce((sum, c) => sum + c.progress_percentage, 0);
     const avgProgress = enrolledCourses.length > 0 ? Math.round(progressSum / enrolledCourses.length) : 0;
 
     return {
-      total_students: 148,
-      total_faculty: 12,
+      total_students: studentCount,
+      total_faculty: facultyCount,
       total_courses: courses.length,
       total_enrollments: enrolledCourses.length + 84, // mock base + active enrollments
       average_course_progress: avgProgress || 55 // fallback if no active enrollments

@@ -8,6 +8,8 @@ import { Unauthorized } from '../pages/Unauthorized';
 import { AdminDashboard } from '../pages/dashboards/AdminDashboard';
 import { FacultyDashboard } from '../pages/dashboards/FacultyDashboard';
 import { StudentDashboard } from '../pages/dashboards/StudentDashboard';
+import { UserManagement } from '../pages/admin/UserManagement';
+import { AITutor } from '../pages/student/AITutor';
 
 // Course Management Imports
 import { CourseList } from '../pages/courses/CourseList';
@@ -71,7 +73,7 @@ export const AppRoutes: React.FC = () => {
           <Route path="/admin/courses/:courseId/quizzes" element={<QuizList />} />
           <Route path="/admin/courses/:courseId/quizzes/new" element={<QuizForm />} />
           <Route path="/admin/courses/:courseId/attendance" element={<FacultyAttendance />} />
-          <Route path="/admin/users" element={<div className="glass-panel" style={{ padding: '32px' }}><h3>User Management (Admin Screen Stub)</h3></div>} />
+          <Route path="/admin/users" element={<UserManagement />} />
           <Route path="/admin/analytics" element={<AdminAnalytics />} />
         </Route>
       </Route>
@@ -111,7 +113,7 @@ export const AppRoutes: React.FC = () => {
           <Route path="/student/courses/:courseId/attendance" element={<StudentAttendance />} />
           <Route path="/student/analytics" element={<StudentAnalytics />} />
           <Route path="/student/courses/:courseId/analytics" element={<StudentAnalytics />} />
-          <Route path="/student/ai-tutor" element={<div className="glass-panel" style={{ padding: '32px' }}><h3>AI Tutor Chatbot (Student Screen Stub)</h3></div>} />
+          <Route path="/student/ai-tutor" element={<AITutor />} />
         </Route>
       </Route>
 

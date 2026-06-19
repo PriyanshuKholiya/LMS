@@ -9,8 +9,9 @@ export const CourseDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
   const [course, setCourse] = useState<MockCourse | null>(null);
-  const [selectedLesson, setSelectedLesson] = useState<{ title: string; content_markdown: string; video_url?: string } | null>(null);
+  const [selectedLesson, setSelectedLesson] = useState<{ id: string; title: string; content_markdown: string; video_url?: string } | null>(null);
   const [activeModuleId, setActiveModuleId] = useState<string | null>(null);
+  const [completedLessonIds, setCompletedLessonIds] = useState<string[]>([]);
 
   // Form states for creating modules / lessons (Faculty & Admin only)
   const [showModuleForm, setShowModuleForm] = useState(false);
@@ -24,12 +25,44 @@ export const CourseDetail: React.FC = () => {
     if (id) {
       const data = await courseService.getCourse(id);
       setCourse(data);
+
+      const completed = localStorage.getItem(`aegis_completed_lessons_${id}`);
+      if (completed) {
+        setCompletedLessonIds(JSON.parse(completed));
+      } else {
+        setCompletedLessonIds([]);
+      }
+
       // Select first lesson by default if available
       if (data && data.modules.length > 0 && data.modules[0].lessons.length > 0) {
         setSelectedLesson(data.modules[0].lessons[0]);
         setActiveModuleId(data.modules[0].id);
       }
     }
+  };
+
+  const handleMarkCompleted = async (lessonId: string) => {
+    if (!course || !id) return;
+    
+    let updatedCompleted = [...completedLessonIds];
+    if (!updatedCompleted.includes(lessonId)) {
+      updatedCompleted.push(lessonId);
+    } else {
+      updatedCompleted = updatedCompleted.filter(lid => lid !== lessonId);
+    }
+    
+    setCompletedLessonIds(updatedCompleted);
+    localStorage.setItem(`aegis_completed_lessons_${id}`, JSON.stringify(updatedCompleted));
+    
+    // Calculate new progress percentage
+    const totalLessons = course.modules.reduce((sum, mod) => sum + mod.lessons.length, 0);
+    const progress_percentage = totalLessons > 0 ? Math.round((updatedCompleted.length / totalLessons) * 100) : 0;
+    
+    await courseService.updateCourse(id, { progress_percentage });
+    
+    // Refresh course state
+    const updatedCourse = await courseService.getCourse(id);
+    if (updatedCourse) setCourse(updatedCourse);
   };
 
   useEffect(() => {
@@ -173,12 +206,20 @@ export const CourseDetail: React.FC = () => {
                           onClick={() => setSelectedLesson(les)}
                           style={{
                             ...styles.lessonItem,
-                            color: selectedLesson?.title === les.title ? 'var(--primary)' : 'var(--text-muted)'
+                            color: selectedLesson?.id === les.id ? 'var(--primary)' : 'var(--text-muted)',
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center'
                           }}
                           className="transition-all"
                         >
-                          <FileText size={16} />
-                          <span>{les.title}</span>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                            <FileText size={16} />
+                            <span>{les.title}</span>
+                          </div>
+                          {completedLessonIds.includes(les.id) && (
+                            <span style={{ color: '#10b981', fontWeight: 'bold', fontSize: '0.85rem' }}>✓</span>
+                          )}
                         </div>
                       ))}
 
@@ -245,6 +286,21 @@ export const CourseDetail: React.FC = () => {
               <div style={styles.markdownBody}>
                 {selectedLesson.content_markdown || 'No content provided for this lesson.'}
               </div>
+
+              {user?.role === 'STUDENT' && (
+                <>
+                  <div style={styles.divider}></div>
+                  <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                    <button 
+                      onClick={() => handleMarkCompleted(selectedLesson.id)}
+                      className={completedLessonIds.includes(selectedLesson.id) ? "btn btn-secondary" : "btn btn-primary"}
+                      style={{ gap: '8px', padding: '10px 20px' }}
+                    >
+                      <span>{completedLessonIds.includes(selectedLesson.id) ? "✓ Lesson Completed (Click to Undo)" : "Mark Lesson as Completed"}</span>
+                    </button>
+                  </div>
+                </>
+              )}
             </div>
           ) : (
             <div className="glass-panel" style={styles.noLessonCard}>

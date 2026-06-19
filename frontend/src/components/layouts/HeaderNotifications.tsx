@@ -166,7 +166,7 @@ export const HeaderNotifications: React.FC = () => {
                   style={{
                     ...styles.item,
                     borderLeft: notif.is_read ? '3px solid transparent' : '3px solid var(--primary)',
-                    backgroundColor: notif.is_read ? 'transparent' : 'rgba(99, 102, 241, 0.03)'
+                    backgroundColor: notif.is_read ? 'transparent' : 'rgba(255, 255, 255, 0.03)'
                   }}
                   className="transition-all"
                 >
@@ -231,7 +231,7 @@ const styles: Record<string, React.CSSProperties> = {
     padding: '2px 6px',
     minWidth: '16px',
     textAlign: 'center',
-    boxShadow: '0 0 0 2px #0f1123'
+    boxShadow: '0 0 0 2px var(--bg-sidebar)'
   },
   statusDot: {
     position: 'absolute',
@@ -240,7 +240,7 @@ const styles: Record<string, React.CSSProperties> = {
     width: '6px',
     height: '6px',
     borderRadius: '50%',
-    boxShadow: '0 0 0 2px #0f1123'
+    boxShadow: '0 0 0 2px var(--bg-sidebar)'
   },
   toastContainer: {
     position: 'fixed',
@@ -251,7 +251,7 @@ const styles: Record<string, React.CSSProperties> = {
     zIndex: 9999,
     boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.4)',
     animation: 'slideIn 0.3s ease-out',
-    border: '1px solid rgba(99, 102, 241, 0.25)',
+    border: '1px solid var(--border)',
     display: 'flex',
     flexDirection: 'column',
     gap: '6px'

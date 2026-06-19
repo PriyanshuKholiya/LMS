@@ -14,6 +14,7 @@ export const QuizAttemptPage: React.FC = () => {
   const [quiz, setQuiz] = useState<MockQuiz | null>(null);
   const [secondsLeft, setSecondsLeft] = useState<number | null>(null);
   const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>({}); // keyed by questionId, value is optionId
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   
   // Results states
   const [attemptResult, setAttemptResult] = useState<MockQuizAttempt | null>(null);
@@ -159,7 +160,7 @@ export const QuizAttemptPage: React.FC = () => {
                 style={{
                   ...styles.timerBox,
                   borderColor: secondsLeft < 60 ? '#ef4444' : 'var(--primary)',
-                  background: secondsLeft < 60 ? 'rgba(239, 68, 68, 0.08)' : 'rgba(99, 102, 241, 0.08)'
+                  background: secondsLeft < 60 ? 'rgba(239, 68, 68, 0.08)' : 'var(--primary-light)'
                 }}
               >
                 <Clock size={18} color={secondsLeft < 60 ? '#ef4444' : 'var(--primary)'} />
@@ -177,46 +178,94 @@ export const QuizAttemptPage: React.FC = () => {
             </div>
           )}
 
-          <div style={styles.questionList}>
-            {quiz.questions.map((question, qIdx) => (
-              <div key={question.id} className="glass-panel" style={styles.questionCard}>
-                <div style={styles.questionTitleRow}>
-                  <span style={styles.questionIndex}>Question {qIdx + 1}</span>
-                  <span style={styles.questionPoints}>{question.points} pts</span>
-                </div>
-                <p style={styles.questionText}>{question.question_text}</p>
-                
-                <div style={styles.optionsList}>
-                  {question.options.map((opt) => (
-                    <label 
-                      key={opt.id} 
-                      style={{
-                        ...styles.optionLabel,
-                        borderColor: selectedOptions[question.id] === opt.id ? 'var(--primary)' : 'var(--border)',
-                        background: selectedOptions[question.id] === opt.id ? 'rgba(99, 102, 241, 0.04)' : 'transparent'
-                      }}
-                      className="transition-all"
-                    >
-                      <input
-                        type="radio"
-                        name={question.id}
-                        value={opt.id}
-                        checked={selectedOptions[question.id] === opt.id}
-                        onChange={() => handleOptionChange(question.id, opt.id)}
-                        style={styles.radioInput}
-                      />
-                      <span>{opt.option_text}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
+          {/* Quick Jump Pagination Header */}
+          <div style={styles.paginationDots}>
+            {quiz.questions.map((_, idx) => (
+              <button
+                key={idx}
+                type="button"
+                onClick={() => setCurrentQuestionIndex(idx)}
+                style={{
+                  ...styles.pageDot,
+                  background: currentQuestionIndex === idx 
+                    ? 'var(--primary)' 
+                    : selectedOptions[quiz.questions[idx].id] 
+                      ? 'rgba(255, 255, 255, 0.12)' 
+                      : 'rgba(255, 255, 255, 0.03)',
+                  color: currentQuestionIndex === idx ? '#000000' : 'var(--text-muted)',
+                  border: currentQuestionIndex === idx ? 'none' : '1px solid var(--border)'
+                }}
+              >
+                {idx + 1}
+              </button>
             ))}
           </div>
 
-          <div style={styles.submitRow}>
-            <button type="submit" className="btn btn-primary" style={{ padding: '12px 32px' }}>
-              Finalize & Submit Answers
+          <div style={styles.questionList}>
+            {(() => {
+              const question = quiz.questions[currentQuestionIndex];
+              return (
+                <div className="glass-panel" style={styles.questionCard}>
+                  <div style={styles.questionTitleRow}>
+                    <span style={styles.questionIndex}>Question {currentQuestionIndex + 1} of {quiz.questions.length}</span>
+                    <span style={styles.questionPoints}>{question.points} pts</span>
+                  </div>
+                  <p style={styles.questionText}>{question.question_text}</p>
+                  
+                  <div style={styles.optionsList}>
+                    {question.options.map((opt) => (
+                      <label 
+                        key={opt.id} 
+                        style={{
+                          ...styles.optionLabel,
+                          borderColor: selectedOptions[question.id] === opt.id ? 'var(--primary)' : 'var(--border)',
+                          background: selectedOptions[question.id] === opt.id ? 'var(--primary-light)' : 'transparent'
+                        }}
+                        className="transition-all"
+                      >
+                        <input
+                          type="radio"
+                          name={question.id}
+                          value={opt.id}
+                          checked={selectedOptions[question.id] === opt.id}
+                          onChange={() => handleOptionChange(question.id, opt.id)}
+                          style={styles.radioInput}
+                        />
+                        <span>{opt.option_text}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              );
+            })()}
+          </div>
+
+          {/* Navigation Buttons Row */}
+          <div style={styles.navigationRow}>
+            <button
+              type="button"
+              onClick={() => setCurrentQuestionIndex(prev => Math.max(0, prev - 1))}
+              disabled={currentQuestionIndex === 0}
+              className="btn btn-secondary"
+              style={{ ...styles.navBtn, opacity: currentQuestionIndex === 0 ? 0.5 : 1 }}
+            >
+              Previous Question
             </button>
+
+            {currentQuestionIndex < quiz.questions.length - 1 ? (
+              <button
+                type="button"
+                onClick={() => setCurrentQuestionIndex(prev => Math.min(quiz.questions.length - 1, prev + 1))}
+                className="btn btn-primary"
+                style={styles.navBtn}
+              >
+                Next Question
+              </button>
+            ) : (
+              <button type="submit" className="btn btn-primary" style={styles.navBtn}>
+                Finalize & Submit Answers
+              </button>
+            )}
           </div>
         </form>
       )}
@@ -371,5 +420,36 @@ const styles: Record<string, React.CSSProperties> = {
     display: 'flex',
     justifyContent: 'flex-end',
     marginTop: '10px'
+  },
+  paginationDots: {
+    display: 'flex',
+    gap: '8px',
+    flexWrap: 'wrap',
+    marginBottom: '20px'
+  },
+  pageDot: {
+    width: '36px',
+    height: '36px',
+    borderRadius: '8px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    cursor: 'pointer',
+    fontSize: '0.9rem',
+    fontWeight: 600,
+    transition: 'all 0.2s',
+    border: 'none',
+    outline: 'none'
+  },
+  navigationRow: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: '20px'
+  },
+  navBtn: {
+    padding: '10px 24px',
+    fontSize: '0.9rem',
+    fontWeight: 600
   }
 };

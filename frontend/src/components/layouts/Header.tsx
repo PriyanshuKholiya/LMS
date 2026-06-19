@@ -1,12 +1,21 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth, type UserRole } from '../../context/AuthContext';
 import { ShieldAlert, Award, UserCheck } from 'lucide-react';
 import { HeaderNotifications } from './HeaderNotifications';
 
 export const Header: React.FC = () => {
   const { user, switchRole } = useAuth();
+  const navigate = useNavigate();
 
   if (!user) return null;
+
+  const handleRoleChange = (role: UserRole) => {
+    switchRole(role);
+    if (role === 'ADMIN') navigate('/admin');
+    else if (role === 'FACULTY') navigate('/faculty');
+    else navigate('/student');
+  };
 
   const getRoleIcon = (role: UserRole) => {
     switch (role) {
@@ -34,7 +43,7 @@ export const Header: React.FC = () => {
           <span style={styles.switcherLabel}>Testing Sandbox:</span>
           <select 
             value={user.role} 
-            onChange={(e) => switchRole(e.target.value as UserRole)}
+            onChange={(e) => handleRoleChange(e.target.value as UserRole)}
             style={styles.switcherSelect}
           >
             <option value="STUDENT">Student Persona</option>
@@ -69,7 +78,7 @@ export const Header: React.FC = () => {
 const styles: Record<string, React.CSSProperties> = {
   header: {
     height: '70px',
-    backgroundColor: '#0f1123',
+    backgroundColor: 'var(--bg-sidebar)',
     borderBottom: '1px solid var(--border)',
     display: 'flex',
     alignItems: 'center',

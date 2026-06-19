@@ -1,10 +1,25 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { Brain, Sparkles, BookOpen, GraduationCap } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { courseService } from '../../services/courses';
+import { type MockCourse } from '../../services/api';
 
 export const StudentDashboard: React.FC = () => {
   const { user } = useAuth();
+  const [courses, setCourses] = useState<MockCourse[]>([]);
+
+  useEffect(() => {
+    const loadCourses = async () => {
+      try {
+        const list = await courseService.getCourses();
+        setCourses(list.filter(c => c.enrolled));
+      } catch (err) {
+        console.error("Error loading student courses", err);
+      }
+    };
+    loadCourses();
+  }, []);
 
   return (
     <div>
@@ -35,25 +50,27 @@ export const StudentDashboard: React.FC = () => {
           <div className="glass-panel" style={styles.recentActivity}>
             <h3 style={{ marginBottom: '20px', fontWeight: 600 }}>Active Courses</h3>
             <div style={styles.courseMiniList}>
-              <div style={styles.courseMiniItem}>
-                <div style={styles.courseDetails}>
-                  <h4 style={{ fontWeight: 600 }}>Intro to Deep Learning</h4>
-                  <div style={styles.progressBarBg}>
-                    <div style={{ ...styles.progressBarFill, width: '45%' }}></div>
-                  </div>
+              {courses.length === 0 ? (
+                <div style={{ color: 'var(--text-muted)', fontSize: '0.9rem', padding: '10px 0' }}>
+                  You are not enrolled in any courses yet. Explore the{' '}
+                  <Link to="/student/courses" style={{ color: 'var(--primary)', fontWeight: 600, textDecoration: 'none' }}>
+                    Course Catalog
+                  </Link>{' '}
+                  to register.
                 </div>
-                <div style={styles.progressText}>45% Complete</div>
-              </div>
-
-              <div style={styles.courseMiniItem}>
-                <div style={styles.courseDetails}>
-                  <h4 style={{ fontWeight: 600 }}>Database Systems</h4>
-                  <div style={styles.progressBarBg}>
-                    <div style={{ ...styles.progressBarFill, width: '75%' }}></div>
+              ) : (
+                courses.map((course) => (
+                  <div key={course.id} style={styles.courseMiniItem}>
+                    <div style={styles.courseDetails}>
+                      <h4 style={{ fontWeight: 600 }}>{course.title}</h4>
+                      <div style={styles.progressBarBg}>
+                        <div style={{ ...styles.progressBarFill, width: `${course.progress_percentage}%` }}></div>
+                      </div>
+                    </div>
+                    <div style={styles.progressText}>{course.progress_percentage}% Complete</div>
                   </div>
-                </div>
-                <div style={styles.progressText}>75% Complete</div>
-              </div>
+                ))
+              )}
             </div>
           </div>
         </div>

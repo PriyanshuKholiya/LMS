@@ -1,14 +1,35 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { Users, BookOpen, GraduationCap, Server } from 'lucide-react';
+import { userService } from '../../services/users';
+import { courseService } from '../../services/courses';
 
 export const AdminDashboard: React.FC = () => {
   const { user } = useAuth();
+  const [studentCount, setStudentCount] = useState(0);
+  const [facultyCount, setFacultyCount] = useState(0);
+  const [courseCount, setCourseCount] = useState(0);
+
+  useEffect(() => {
+    const loadStats = async () => {
+      try {
+        const users = await userService.getUsers();
+        setStudentCount(users.filter(u => u.role === 'STUDENT').length);
+        setFacultyCount(users.filter(u => u.role === 'FACULTY').length);
+
+        const courses = await courseService.getCourses();
+        setCourseCount(courses.filter(c => c.status === 'PUBLISHED').length);
+      } catch (err) {
+        console.error("Error loading dashboard stats", err);
+      }
+    };
+    loadStats();
+  }, []);
 
   const stats = [
-    { label: 'Active Students', value: '1,420', change: '+12% this month', icon: <GraduationCap size={24} color="#6366f1" /> },
-    { label: 'Instructors', value: '84', change: '+4% this term', icon: <Users size={24} color="#f59e0b" /> },
-    { label: 'Published Courses', value: '312', change: '+8 new drafts', icon: <BookOpen size={24} color="#10b981" /> },
+    { label: 'Active Students', value: studentCount.toString(), change: 'Enrolled platform profiles', icon: <GraduationCap size={24} color="var(--primary)" /> },
+    { label: 'Instructors', value: facultyCount.toString(), change: 'Active faculty profiles', icon: <Users size={24} color="#f59e0b" /> },
+    { label: 'Published Courses', value: courseCount.toString(), change: 'Live curriculum listings', icon: <BookOpen size={24} color="#10b981" /> },
     { label: 'API Server Load', value: '28%', change: 'All systems operational', icon: <Server size={24} color="#38bdf8" /> }
   ];
 
@@ -41,7 +62,7 @@ export const AdminDashboard: React.FC = () => {
           </div>
           <div style={styles.taskItem}>
             <span>Course Statistics Aggregator</span>
-            <span style={{ ...styles.statusBadge, background: 'rgba(99, 102, 241, 0.12)', color: '#6366f1' }}>Running</span>
+            <span style={{ ...styles.statusBadge, background: 'var(--primary-light)', color: 'var(--primary)' }}>Running</span>
           </div>
           <div style={styles.taskItem}>
             <span>Weekly Quiz Report Dispatcher</span>

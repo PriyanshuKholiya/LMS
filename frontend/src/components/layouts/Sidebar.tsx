@@ -53,7 +53,7 @@ export const Sidebar: React.FC = () => {
     <aside style={styles.sidebar}>
       <div style={styles.logoContainer}>
         <div style={styles.logoIcon}>
-          <BrainCircuit size={24} color="#6366f1" />
+          <BrainCircuit size={24} color="var(--primary)" />
         </div>
         <span style={styles.logoText}>Aegis LMS</span>
       </div>
@@ -109,7 +109,7 @@ const styles: Record<string, React.CSSProperties> = {
     borderBottom: '1px solid var(--border)'
   },
   logoIcon: {
-    background: 'rgba(99, 102, 241, 0.12)',
+    background: 'var(--primary-light)',
     padding: '8px',
     borderRadius: '8px',
     display: 'flex',
